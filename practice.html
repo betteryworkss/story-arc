@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>창작 연습 – 스토리 아크</title>
+
+  <!-- 폰트: Pretendard(한국어), Inter(영문) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+  <style>
+    /* ==========================================================
+       1. 디자인 토큰 & 기본 스타일 (story-arc.html과 동일)
+       ========================================================== */
+    :root {
+      --black: #000000;
+      --surface: #0c0c0c;
+      --line: #262626;
+      --text: #f5f5f5;
+      --muted: #a8a8a8;
+      --neon: #39ff14;
+      --pink: #ff2e97;
+      --radius-card: 12px;
+      --radius-btn: 8px;
+      --fs-sm: 0.9375rem;
+      --header-h: 72px;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); }
+    body {
+      margin: 0; background: var(--black); color: var(--text);
+      font-family: 'Inter', 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+      font-size: 1rem; line-height: 1.7; word-break: keep-all; -webkit-font-smoothing: antialiased;
+    }
+    img, svg { max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    ul, ol { margin: 0; padding: 0; list-style: none; }
+    h1, h2, h3, p { margin: 0; }
+    :focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; }
+    .container { width: min(1160px, 100% - 48px); margin-inline: auto; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+
+    /* 버튼 */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 48px; padding: 0 24px;
+      border: 1.5px solid transparent; border-radius: var(--radius-btn);
+      font: inherit; font-weight: 600; cursor: pointer; background: transparent; color: var(--text);
+      transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease, transform .3s ease;
+    }
+    .btn-primary { background: var(--neon); color: var(--black); }
+    .btn-primary:hover { box-shadow: 0 0 28px rgba(57,255,20,.55); transform: translateY(-2px); }
+    .btn-ghost { border-color: var(--pink); color: var(--pink); }
+    .btn-ghost:hover { background: var(--pink); color: var(--black); box-shadow: 0 0 28px rgba(255,46,151,.5); transform: translateY(-2px); }
+    .btn-line { border-color: var(--line); color: var(--text); }
+    .btn-line:hover { border-color: var(--neon); color: var(--neon); }
+    .btn[disabled] { opacity: .35; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ==========================================================
+       2. 헤더 (햄버거 메뉴 포함)
+       ========================================================== */
+    .site-header {
+      position: fixed; inset: 0 0 auto 0; z-index: 50; height: var(--header-h);
+      background: rgba(0,0,0,.35); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+      transition: background-color .3s ease, box-shadow .3s ease;
+    }
+    .site-header.scrolled { background: rgba(0,0,0,.96); box-shadow: 0 6px 24px rgba(255,46,151,.22); }
+    .header-inner { height: 100%; display: flex; align-items: center; justify-content: space-between; }
+    .logo { font-weight: 800; font-size: 1.25rem; letter-spacing: -0.02em; }
+    .logo span { color: var(--neon); }
+    .nav-list { display: flex; align-items: center; gap: 8px; }
+    .nav-list a {
+      display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px;
+      border-radius: var(--radius-btn); color: var(--muted);
+      transition: color .3s ease, background-color .3s ease;
+    }
+    .nav-list a:hover { color: var(--neon); background: rgba(57,255,20,.08); }
+    .nav-toggle { position: absolute; opacity: 0; pointer-events: none; }
+    .hamburger { display: none; }
+
+    /* ==========================================================
+       3. 연습 페이지 공통 영역
+       ========================================================== */
+    main { padding-top: calc(var(--header-h) + 40px); padding-bottom: 120px; }
+    .back { display: inline-flex; align-items: center; min-height: 44px; color: var(--muted); transition: color .3s ease; }
+    .back:hover { color: var(--pink); }
+
+    /* 유형 선택 화면 (type 값이 없을 때) */
+    .picker-head h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; margin-top: 16px; }
+    .picker-head p { margin-top: 16px; color: var(--muted); max-width: 36rem; }
+    .picker-grid { margin-top: 48px; }
+    .pick-card {
+      display: block; background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius-card); padding: 24px; transition: border-color .3s ease;
+    }
+    .pick-card:hover { border-color: var(--neon); }
+    .pick-card strong { display: block; font-size: 1.25rem; }
+    .pick-card .en { color: var(--pink); font-size: var(--fs-sm); font-weight: 600; }
+    .pick-card p { margin-top: 12px; color: var(--muted); font-size: var(--fs-sm); }
+    .pick-card .done-tag { margin-top: 12px; color: var(--neon); font-size: var(--fs-sm); font-weight: 600; }
+
+    /* 상단 소개 + 곡선 미리보기 */
+    .p-head { display: grid; grid-template-columns: 1fr; gap: 32px; align-items: center; margin-top: 16px; }
+    .p-head h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+    .p-head .en { margin-top: 8px; color: var(--pink); font-weight: 600; }
+    .p-head p.summary { margin-top: 16px; color: var(--muted); max-width: 34rem; }
+    .p-arc {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 16px;
+    }
+    .p-arc svg { display: block; width: 100%; height: auto; }
+    .p-arc figcaption { margin-top: 8px; color: var(--muted); font-size: var(--fs-sm); }
+
+    /* 단계 + 본문 레이아웃 */
+    .p-layout { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 48px; }
+
+    /* 단계 선택 바 (모바일·태블릿: 가로 스크롤) */
+    .stepper { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+    .stepper li { flex: none; }
+    .step-pill {
+      display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 16px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-btn);
+      color: var(--muted); font: inherit; cursor: pointer; white-space: nowrap;
+      transition: border-color .3s ease, color .3s ease, background-color .3s ease;
+    }
+    .step-pill .no {
+      display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+      border: 1.5px solid currentColor; font-size: .8125rem; font-weight: 800;
+    }
+    .step-pill:hover { border-color: var(--neon); color: var(--text); }
+    .step-pill.current { border-color: var(--neon); color: var(--neon); background: rgba(57,255,20,.06); }
+    .step-pill.filled .no { background: var(--pink); border-color: var(--pink); color: var(--black); }
+
+    /* 단계 카드 */
+    .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 28px; }
+    .panel-top { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; color: var(--muted); font-size: var(--fs-sm); }
+    .chip {
+      display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px;
+      border-radius: 999px; border: 1px solid var(--line); font-size: var(--fs-sm); color: var(--text);
+    }
+    .chip.up { border-color: var(--neon); color: var(--neon); }
+    .chip.down { border-color: var(--pink); color: var(--pink); }
+    .panel h2 { margin-top: 16px; font-size: clamp(1.5rem, 3.5vw, 2rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.3; }
+    .panel .goal { margin-top: 12px; color: var(--muted); max-width: 42rem; }
+
+    /* 참고 스크립트 */
+    .script { margin-top: 24px; padding: 20px 20px 20px 24px; border-left: 3px solid var(--pink); background: #070707; border-radius: 0 var(--radius-btn) var(--radius-btn) 0; }
+    .script h3 { font-size: 1.0625rem; font-weight: 800; color: var(--pink); }
+    .script ul { margin-top: 12px; display: grid; gap: 8px; }
+    .script li { position: relative; padding-left: 20px; font-size: var(--fs-sm); }
+    .script li::before { content: ''; position: absolute; left: 0; top: .7em; width: 8px; height: 8px; border-radius: 2px; background: var(--neon); }
+    .script details { margin-top: 16px; }
+    .script summary {
+      display: flex; align-items: center; min-height: 48px; padding: 0 16px; cursor: pointer;
+      border: 1px solid var(--line); border-radius: var(--radius-btn); font-weight: 600; list-style: none;
+      transition: border-color .3s ease, color .3s ease;
+    }
+    .script summary::-webkit-details-marker { display: none; }
+    .script summary:hover { border-color: var(--neon); color: var(--neon); }
+    .script details[open] summary { border-color: var(--neon); color: var(--neon); }
+    .sample { margin-top: 12px; padding: 16px; border-radius: var(--radius-btn); background: var(--black); border: 1px dashed #3a3a3a; color: #dcdcdc; font-size: var(--fs-sm); }
+    .sample small { display: block; margin-top: 8px; color: var(--muted); }
+    .starters { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .starters span.label { color: var(--muted); font-size: var(--fs-sm); margin-right: 4px; }
+    .starter {
+      min-height: 44px; padding: 0 16px; border-radius: var(--radius-btn);
+      border: 1px solid var(--line); background: var(--black); color: var(--text); font: inherit; font-size: var(--fs-sm); cursor: pointer;
+      transition: border-color .3s ease, color .3s ease, background-color .3s ease;
+    }
+    .starter:hover { border-color: var(--pink); color: var(--pink); }
+
+    /* 입력 영역 */
+    .field { margin-top: 24px; }
+    .field label { display: block; margin-bottom: 8px; font-weight: 600; }
+    .field input[type="text"], .field textarea {
+      width: 100%; padding: 14px 16px; background: var(--black); color: var(--text);
+      border: 1px solid #333; border-radius: var(--radius-btn); font: inherit; font-size: 1rem; line-height: 1.7;
+      transition: border-color .3s ease, box-shadow .3s ease;
+    }
+    .field input[type="text"] { min-height: 48px; }
+    .field textarea { min-height: 220px; resize: vertical; }
+    .field input:focus, .field textarea:focus { outline: none; border-color: var(--neon); box-shadow: 0 0 0 3px rgba(57,255,20,.15); }
+    .meter { margin-top: 12px; display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: var(--fs-sm); }
+    .meter-bar { flex: 1; height: 6px; border-radius: 3px; background: #1c1c1c; overflow: hidden; }
+    .meter-bar i { display: block; height: 100%; width: 0; background: var(--pink); transition: width .3s ease, background-color .3s ease; }
+    .meter.ok .meter-bar i { background: var(--neon); }
+    .msg { margin-top: 16px; color: var(--pink); min-height: 1.7em; }
+    .actions { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
+    .actions .right { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    /* ==========================================================
+       4. 피드백 영역
+       ========================================================== */
+    .feedback { margin-top: 96px; }
+    .feedback h2.big { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 800; letter-spacing: -0.02em; }
+    .fb-note { margin-top: 12px; color: var(--muted); font-size: var(--fs-sm); max-width: 40rem; }
+    .score-row { display: grid; grid-template-columns: 1fr; gap: 24px; margin-top: 32px; }
+    .score-card { display: flex; align-items: center; gap: 24px; }
+    .ring {
+      --p: 0; flex: none; width: 128px; height: 128px; border-radius: 50%;
+      background: conic-gradient(var(--neon) calc(var(--p) * 1%), #1c1c1c 0);
+      display: grid; place-items: center; position: relative;
+      box-shadow: 0 0 28px rgba(57,255,20,.18);
+    }
+    .ring::before { content: ''; position: absolute; inset: 10px; border-radius: 50%; background: var(--surface); }
+    .ring b { position: relative; font-size: 2rem; font-weight: 800; }
+    .verdict { font-size: 1.375rem; font-weight: 800; line-height: 1.4; }
+    .verdict small { display: block; margin-top: 8px; color: var(--muted); font-weight: 400; font-size: var(--fs-sm); }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-card); padding: 24px; }
+    .card h3 { font-size: 1.125rem; font-weight: 800; }
+    .card ul { margin-top: 12px; display: grid; gap: 10px; }
+    .card li { position: relative; padding-left: 20px; font-size: var(--fs-sm); color: #dcdcdc; }
+    .card li::before { content: ''; position: absolute; left: 0; top: .7em; width: 8px; height: 8px; border-radius: 2px; }
+    .good-list li::before { background: var(--neon); }
+    .fix-list li::before { background: var(--pink); }
+    .chart-card { margin-top: 24px; }
+    .chart-card svg { display: block; width: 100%; height: auto; margin-top: 12px; }
+    .legend { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px 20px; color: var(--muted); font-size: var(--fs-sm); }
+    .legend i { display: inline-block; width: 22px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 8px; }
+    .legend i.t { border-color: var(--pink); border-top-style: dashed; }
+    .legend i.m { border-color: var(--neon); }
+    .step-fb { margin-top: 32px; }
+    .step-fb h3 { margin-bottom: 0; }
+    .step-fb .chips { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .chip.s-good { border-color: var(--neon); color: var(--neon); }
+    .chip.s-ok { border-color: #d9c400; color: #f1dd2f; }
+    .chip.s-miss { border-color: var(--pink); color: var(--pink); }
+    .step-fb p { margin-top: 12px; font-size: var(--fs-sm); color: #dcdcdc; }
+    .fb-actions { margin-top: 40px; display: flex; flex-wrap: wrap; gap: 12px; }
+    .story-full { margin-top: 32px; white-space: pre-wrap; font-size: var(--fs-sm); color: #dcdcdc; }
+
+    /* ==========================================================
+       5. 위로 가기 버튼
+       ========================================================== */
+    .to-top {
+      position: fixed; right: 20px; bottom: 20px; z-index: 40; width: 52px; height: 52px;
+      border: 1.5px solid var(--neon); border-radius: var(--radius-card); background: var(--black); color: var(--neon); cursor: pointer;
+      opacity: 0; visibility: hidden; transform: translateY(12px);
+      transition: opacity .3s ease, transform .3s ease, visibility .3s, background-color .3s ease, color .3s ease, box-shadow .3s ease;
+    }
+    .to-top.show { opacity: 1; visibility: visible; transform: none; }
+    .to-top:hover { background: var(--neon); color: var(--black); box-shadow: 0 0 24px rgba(57,255,20,.5); }
+    .to-top svg { width: 22px; height: 22px; margin: auto; display: block; }
+
+    /* 푸터 */
+    .site-footer { border-top: 1px solid var(--line); padding-block: 40px; color: var(--muted); font-size: var(--fs-sm); }
+
+    /* ==========================================================
+       6. 반응형: 태블릿 (641px ~ 1024px) — 한 줄에 2개
+       ========================================================== */
+    @media (min-width: 641px) and (max-width: 1024px) {
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .score-row { grid-template-columns: 1fr 1fr; }
+      .score-row .score-card { grid-column: 1 / -1; }
+    }
+
+    /* ==========================================================
+       7. 반응형: 데스크톱 (1025px 이상) — 한 줄에 3개
+       ========================================================== */
+    @media (min-width: 1025px) {
+      .grid { grid-template-columns: repeat(3, 1fr); }
+      .p-head { grid-template-columns: 1.1fr 1fr; gap: 56px; }
+      .p-layout { grid-template-columns: 260px 1fr; gap: 32px; align-items: start; }
+      .stepper { flex-direction: column; overflow: visible; position: sticky; top: calc(var(--header-h) + 24px); }
+      .step-pill { width: 100%; }
+      .panel { padding: 40px; }
+      .score-row { grid-template-columns: 1.2fr 1fr 1fr; }
+    }
+
+    /* ==========================================================
+       8. 반응형: 모바일 (최대 640px) — 한 줄에 1개, 햄버거 메뉴
+       ========================================================== */
+    @media (max-width: 640px) {
+      :root { --fs-sm: 1rem; }
+      .container { width: calc(100% - 40px); }
+      .panel { padding: 20px; }
+      .card { padding: 20px; }
+      .step-pill .no { font-size: 1rem; }
+      .actions { flex-direction: column-reverse; }
+      .actions .right, .actions .btn { width: 100%; }
+      .actions .right .btn { flex: 1; }
+      .fb-actions .btn { width: 100%; }
+      .score-card { flex-direction: column; text-align: center; }
+      .to-top { right: 16px; bottom: 16px; width: 48px; height: 48px; }
+
+      .hamburger {
+        display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px;
+        width: 48px; height: 48px; margin-right: -8px; border-radius: var(--radius-btn); cursor: pointer;
+      }
+      .hamburger span { display: block; width: 24px; height: 2px; background: var(--text); border-radius: 2px; transition: transform .3s ease, opacity .3s ease, background-color .3s ease; }
+      .nav-toggle:checked + .hamburger span { background: var(--neon); }
+      .nav-toggle:checked + .hamburger span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+      .nav-toggle:checked + .hamburger span:nth-child(2) { opacity: 0; }
+      .nav-toggle:checked + .hamburger span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+      .nav-toggle:focus-visible + .hamburger { outline: 2px solid var(--neon); outline-offset: 2px; }
+      .site-nav {
+        position: absolute; top: 100%; left: 0; right: 0; background: rgba(0,0,0,.98);
+        border-bottom: 1px solid var(--line); max-height: 0; overflow: hidden; transition: max-height .35s ease;
+      }
+      .nav-toggle:checked ~ .site-nav { max-height: 320px; }
+      .nav-list { flex-direction: column; align-items: stretch; gap: 0; padding: 8px 20px 16px; }
+      .nav-list a { min-height: 48px; font-size: 1.0625rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================================
+       [섹션] 헤더: 로고 + 내비게이션 (모바일 햄버거)
+       ========================================================== -->
+  <header class="site-header" id="siteHeader">
+    <div class="container header-inner">
+      <a href="story-arc.html" class="logo">스토리 <span>아크</span></a>
+      <input type="checkbox" id="navToggle" class="nav-toggle" aria-label="메뉴 열기/닫기">
+      <label for="navToggle" class="hamburger" id="hamburger" role="button" tabindex="0" aria-controls="siteNav" aria-expanded="false" aria-label="메뉴">
+        <span></span><span></span><span></span>
+      </label>
+      <nav class="site-nav" id="siteNav" aria-label="주요 메뉴">
+        <ul class="nav-list">
+          <li><a href="story-arc.html#types">스토리의 6가지 유형</a></li>
+          <li><a href="story-arc.html#structure">스토리 구조화</a></li>
+          <li><a href="story-arc.html#list">창작목록</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <!-- ======================================================
+           [섹션] 유형 선택 화면 (주소에 type 값이 없을 때만 표시)
+           ====================================================== -->
+      <section id="picker" hidden>
+        <a class="back" href="story-arc.html#list">창작목록으로 돌아가기</a>
+        <div class="picker-head">
+          <h1>연습할 유형을 골라 주세요</h1>
+          <p>유형을 고르면 단계별 안내와 참고 스크립트가 열립니다. 모든 단계를 쓰고 나면 피드백을 받을 수 있어요.</p>
+        </div>
+        <div class="grid picker-grid" id="pickerGrid"></div>
+      </section>
+
+      <!-- ======================================================
+           [섹션] 연습 화면: 소개 + 단계 선택 + 단계별 작성
+           ====================================================== -->
+      <section id="practice" hidden>
+        <a class="back" href="story-arc.html#list">창작목록으로 돌아가기</a>
+
+        <div class="p-head">
+          <div>
+            <h1 id="pTitle"></h1>
+            <p class="en" id="pEn"></p>
+            <p class="summary" id="pSummary"></p>
+          </div>
+          <figure class="p-arc" style="margin:0">
+            <div id="pArc"></div>
+            <figcaption>이 유형의 감정 곡선입니다. 점은 각 단계의 목표 분위기이고, 빛나는 점이 지금 단계예요.</figcaption>
+          </figure>
+        </div>
+
+        <div class="p-layout">
+          <!-- 단계 선택 -->
+          <ol class="stepper" id="stepper" aria-label="연습 단계"></ol>
+
+          <!-- 단계 본문 -->
+          <div>
+            <div class="panel" id="stepPanel">
+              <div class="panel-top">
+                <span id="stepBadge"></span>
+                <span class="chip" id="moodChip"></span>
+              </div>
+              <h2 id="stepTitle"></h2>
+              <p class="goal" id="stepGoal"></p>
+
+              <!-- 참고 스크립트 -->
+              <div class="script">
+                <h3>참고 스크립트</h3>
+                <ul id="guideList"></ul>
+                <details id="sampleBox">
+                  <summary>예시 스크립트 보기</summary>
+                  <div class="sample"><span id="sampleText"></span><small>따라 쓰지 말고, 분위기와 구성만 참고하세요.</small></div>
+                </details>
+                <div class="starters" id="starters"></div>
+              </div>
+
+              <!-- 첫 단계에서만 보이는 주인공 이름 -->
+              <div class="field" id="nameField" hidden>
+                <label for="nameInput">주인공 이름 (이후 단계에서 이름이 나오는지 확인합니다)</label>
+                <input type="text" id="nameInput" maxlength="12" placeholder="예: 수아" autocomplete="off">
+              </div>
+
+              <div class="field">
+                <label for="answer">내 장면 쓰기</label>
+                <textarea id="answer" placeholder="이곳에 장면을 써 보세요. 3~5문장이면 충분합니다."></textarea>
+                <div class="meter" id="meter" aria-live="polite">
+                  <span id="counter">0자</span>
+                  <span class="meter-bar"><i id="meterFill"></i></span>
+                  <span>권장 120자</span>
+                </div>
+              </div>
+
+              <p class="msg" id="formMsg" role="status"></p>
+
+              <div class="actions">
+                <button type="button" class="btn btn-line" id="prevBtn">이전 단계</button>
+                <div class="right">
+                  <button type="button" class="btn btn-ghost" id="nextBtn">다음 단계</button>
+                  <button type="button" class="btn btn-primary" id="doneBtn" hidden>피드백 받기</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====================================================
+             [섹션] 피드백 (피드백 받기를 누르면 표시)
+             ==================================================== -->
+        <section class="feedback" id="feedback" aria-labelledby="fbTitle" hidden>
+          <h2 class="big" id="fbTitle" tabindex="-1">작성 피드백</h2>
+          <p class="fb-note">글에 쓰인 단어와 구성을 자동으로 분석한 결과입니다. 사람이 읽는 것만큼 정확하지는 않으니 참고용으로 활용하세요.</p>
+
+          <div class="score-row">
+            <div class="card score-card">
+              <div class="ring" id="ring"><b id="scoreNum">0</b></div>
+              <div class="verdict"><span id="verdict"></span><small id="verdictSub"></small></div>
+            </div>
+            <div class="card">
+              <h3>잘한 점</h3>
+              <ul class="good-list" id="goodList"></ul>
+            </div>
+            <div class="card">
+              <h3>보완할 점</h3>
+              <ul class="fix-list" id="fixList"></ul>
+            </div>
+          </div>
+
+          <div class="card chart-card">
+            <h3>감정 곡선 비교</h3>
+            <div id="chart"></div>
+            <div class="legend">
+              <span><i class="t"></i>목표 곡선</span>
+              <span><i class="m"></i>내가 쓴 글의 분위기</span>
+            </div>
+          </div>
+
+          <div class="step-fb">
+            <h3>단계별 피드백</h3>
+            <div class="grid" id="stepFeedback" style="margin-top:16px"></div>
+          </div>
+
+          <div class="card story-full" id="storyFull" hidden></div>
+
+          <div class="fb-actions">
+            <button type="button" class="btn btn-primary" id="reviseBtn">글 다듬으러 가기</button>
+            <button type="button" class="btn btn-ghost" id="copyBtn">전체 글 복사</button>
+            <button type="button" class="btn btn-line" id="saveBtn">텍스트 파일로 저장</button>
+            <a class="btn btn-line" id="nextTypeBtn" href="practice.html">다른 유형 연습하기</a>
+          </div>
+        </section>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- [섹션] 푸터 -->
+  <footer class="site-footer">
+    <div class="container">
+      <p>© 2026 스토리 아크 · 감정 곡선 유형은 Reagan 외 (2016, arXiv:1606.07772)를 바탕으로 합니다.</p>
+    </div>
+  </footer>
+
+  <!-- 위로 가기 버튼 -->
+  <button type="button" class="to-top" id="toTop" aria-label="맨 위로 가기">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <!-- ==========================================================
+       JavaScript (순수 ES6+, 외부 라이브러리 없음)
+       ========================================================== -->
+  <script>
+    /* ----------------------------------------------------------
+       0. 공통 도우미
+       ---------------------------------------------------------- */
+    const $ = (sel) => document.querySelector(sel);
+    const esc = (s) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+    // 저장소(localStorage)를 쓸 수 없는 환경에서도 오류 없이 동작하게 감쌉니다
+    const store = {
+      get: (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+      set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* 무시 */ } },
+      del: (k) => { try { localStorage.removeItem(k); } catch (e) { /* 무시 */ } }
+    };
+
+    /* ----------------------------------------------------------
+       1. 연습 데이터: 6가지 유형 × 단계별 안내와 참고 스크립트
+          level = 그 단계가 끝났을 때의 분위기 (-2 매우 나쁨 ~ +2 매우 좋음)
+          turn  = 분위기가 꺾이는 전환 장면인지 여부
+       ---------------------------------------------------------- */
+    const S = (role, title, level, turn, goal, guide, sample, starters) =>
+      ({ role, title, level, turn, goal, guide, sample, starters });
+
+    const TYPES = {
+      rise: {
+        name: '상승형', en: 'Rags to riches', color: '#39ff14',
+        summary: '가장 낮은 곳에서 시작해 이야기 내내 나아지는 구조입니다. 한 장면마다 조금씩 더 좋아지게 쓰는 것이 핵심이에요.',
+        steps: [
+          S('출발점', '가장 낮은 곳에서 시작하기', -2, false,
+            '독자가 주인공의 처지를 한눈에 알 수 있도록, 가진 것이 없는 상태와 간절한 소원을 보여 주세요.',
+            ['주인공은 누구이고 지금 무엇이 부족한가요?', '주인공이 아직 말하지 못한 소원은 무엇인가요?'],
+            '수아의 통장에는 만 이천 원이 남아 있었다. 월세 독촉 문자를 지우지도 못한 채, 그녀는 차가운 유리창에 이마를 대고 서 있었다. 오븐 하나라도 켜 볼 수 있다면, 하는 외로운 소원을 아무에게도 말하지 못했다.',
+            ['○○의 주머니에는 …', '아무도 ○○에게 …']),
+          S('첫 걸음', '작은 성공 하나', 0.5, false,
+            '아주 작은 성공이 일어납니다. 크지 않아도 되니, 주인공이 처음으로 해냈다고 느끼는 순간을 쓰세요.',
+            ['어떤 작은 행동이 어떤 작은 결과를 불렀나요?', '누가 그것을 알아봐 주었나요?'],
+            '다음 날 새벽, 수아는 남은 밀가루로 식빵 세 덩이를 구웠다. 옆 가게 할머니가 한 덩이를 사 가며 웃었다. “내일도 있어요?” 그 한마디에 수아는 처음으로 내일이 기다려졌다.',
+            ['그날 처음으로 …', '작은 일이었지만 …']),
+          S('도약', '기회가 커지는 순간', 1.2, true,
+            '조력자나 기회가 나타나 상황이 크게 좋아집니다. 이전 장면보다 한 단계 더 큰 변화를 보여 주세요.',
+            ['어떤 기회나 사람이 등장하나요?', '주인공의 선택이 이 기회를 어떻게 붙잡았나요?'],
+            '그러던 중 소문을 들은 동네 카페가 납품을 제안했다. 하루 서른 개, 한 달 계약. 수아는 환하게 웃으며 새 간판 도안을 그리기 시작했다. 가슴이 뿌듯하게 부풀었다.',
+            ['그러던 중 …', '마침내 …']),
+          S('결말', '가장 높은 곳에 서기', 2, false,
+            '첫 장면과 같은 장소나 사물을 다시 보여 주며, 얼마나 멀리 왔는지 느끼게 하세요.',
+            ['첫 장면의 무엇을 다시 가져올 수 있나요?', '주인공의 마지막 행동 하나는 무엇인가요?'],
+            '일 년 뒤, 같은 유리창 앞에 줄이 늘어서 있었다. 수아는 오븐 앞에서 숨을 고르고 문을 열었다. 따뜻한 빵 냄새가 골목 끝까지 번졌고, 그녀는 활짝 웃었다.',
+            ['일 년 뒤, …', '이제 ○○는 …'])
+        ]
+      },
+
+      fall: {
+        name: '비극형', en: 'Tragedy, Riches to rags', color: '#ff2e97',
+        summary: '가장 행복한 곳에서 시작해 이야기 내내 나빠지는 구조입니다. 독자가 잃게 될 것을 먼저 사랑하게 만드는 것이 중요해요.',
+        steps: [
+          S('출발점', '가장 높은 곳에서 시작하기', 2, false,
+            '독자가 잃게 될 것을 먼저 사랑하게 만드세요. 주인공이 가진 행복을 구체적으로 보여 주세요.',
+            ['주인공이 가진 가장 소중한 것은 무엇인가요?', '그 행복이 어떤 감각(소리, 냄새, 빛)으로 느껴지나요?'],
+            '도윤은 연주를 마치고 무대 위에서 활짝 웃었다. 객석의 박수가 파도처럼 밀려왔고, 대기실에는 가족이 들고 온 꽃향기가 가득했다. 그는 지금이 가장 행복하다고 생각했다.',
+            ['○○는 더 바랄 것이 없었다. …', '박수 소리가 …']),
+          S('첫 균열', '작은 균열이 생기는 순간', -0.5, true,
+            '아직 큰일은 아닙니다. 하지만 독자가 뭔가 이상하다고 느끼도록 작은 불길한 징후를 넣으세요.',
+            ['행복 속에 어떤 사소한 이상 신호가 있나요?', '주인공은 그것을 어떻게 외면하나요?'],
+            '연주가 끝난 뒤, 도윤은 왼손 손끝이 미세하게 떨리는 것을 알아챘다. 피곤해서겠지, 하고 그는 고개를 저었다. 그러나 이튿날 아침에도 그 떨림은 가시지 않았고 불안이 스며들었다.',
+            ['그러나 그날 이후 …', '사소한 일이라고 생각했지만 …']),
+          S('가속', '나빠지는 속도가 붙기', -1.2, false,
+            '하나의 문제가 다른 문제를 부릅니다. 되돌리려는 노력이 오히려 상황을 악화시키게 하세요.',
+            ['주인공의 대응이 어떤 새로운 문제를 만드나요?', '도와줄 사람은 왜 곁에 없나요?'],
+            '도윤은 연습 시간을 두 배로 늘렸다. 하지만 떨림은 심해졌고 연주회 두 개가 취소됐다. 동료들은 전화를 피했고 통장의 숫자는 하루가 다르게 줄었다. 후회와 초조함이 밤마다 그를 눌렀다.',
+            ['애쓸수록 …', '설상가상으로 …']),
+          S('결말', '가장 낮은 곳에 닿기', -2, false,
+            '첫 장면과 대칭이 되도록, 같은 장소나 사물이 이제는 어떻게 달라졌는지 보여 주세요. 결말을 억지로 위로하지 마세요.',
+            ['첫 장면의 무엇이 지금은 사라졌나요?', '주인공의 마지막 모습은 어떤가요?'],
+            '텅 빈 연습실에서 도윤은 케이스를 열지 못한 채 어두운 무대를 오래 바라보았다. 그날의 박수 소리는 이제 어디에도 남아 있지 않았고, 그는 처음으로 외로움이라는 말을 이해했다.',
+            ['이제 ○○의 곁에는 …', '텅 빈 …'])
+        ]
+      },
+
+      hole: {
+        name: '구덩이형', en: 'Man in a hole', color: '#39ff14',
+        summary: '주인공이 구덩이에 빠졌다가 빠져나오는 구조입니다. 바닥이 깊을수록 반등이 더 크게 느껴져요.',
+        steps: [
+          S('출발점', '평범하게 괜찮은 일상', 1, false,
+            '아주 좋지도 나쁘지도 않은 안정된 일상을 보여 주세요. 곧 잃게 될 것을 슬쩍 깔아 두면 좋습니다.',
+            ['주인공의 하루는 어떻게 흘러가나요?', '주인공이 당연하게 여기는 것은 무엇인가요?'],
+            '지후는 아침마다 같은 커피를 사고, 같은 자리에서 일했다. 동료들과 나누는 점심은 평범했지만 든든했다. 그는 이 안정이 영원히 이어질 거라고 믿고 있었다.',
+            ['○○의 하루는 …', '아침마다 …']),
+          S('추락', '구덩이에 빠지는 순간', -1, true,
+            '한 가지 사건으로 일상이 무너집니다. 장면의 전환이 분명해야 합니다.',
+            ['어떤 사건이 일상을 무너뜨리나요?', '주인공이 처음 보이는 반응은 무엇인가요?'],
+            '그러던 어느 월요일, 인사팀의 호출이 왔다. 해고 통보였다. 지후는 상자에 짐을 담으며 손이 떨리는 것을 느꼈고, 아무도 눈을 마주치지 않았다.',
+            ['그러던 어느 날 …', '갑자기 …']),
+          S('바닥', '가장 깊은 곳', -2, false,
+            '더는 내려갈 곳이 없는 지점을 보여 주세요. 감정을 직접 설명하기보다 행동과 풍경으로 드러내면 좋습니다.',
+            ['바닥에서 주인공은 무엇을 하고 있나요?', '주인공이 가장 두려워하는 생각은 무엇인가요?'],
+            '몇 달이 지나도 면접 결과는 모두 불합격이었다. 지후는 불 꺼진 방에서 천장만 바라보며 하루를 보냈다. 이대로 모든 것이 끝났다는 막막함이 가슴을 눌렀다.',
+            ['몇 달이 지나도 …', '○○는 더 이상 …']),
+          S('반등', '손을 뻗는 순간', 0.5, true,
+            '작은 계기로 방향이 바뀝니다. 마법 같은 해결이 아니라 주인공이 스스로 내딛는 한 걸음이 보이게 하세요.',
+            ['어떤 계기가 주인공을 일으켜 세우나요?', '주인공이 처음으로 한 행동은 무엇인가요?'],
+            '그때 오래전 친구에게서 안부 문자가 왔다. 지후는 한참을 망설이다 답장을 보냈고, 오랜만에 소리 내어 웃었다. 다음 날 그는 창문을 활짝 열었다.',
+            ['그때 …', '어느 날 문득 …']),
+          S('결말', '구덩이 밖으로', 2, false,
+            '밖으로 나온 주인공은 이전과 같지 않습니다. 달라진 점 하나를 분명하게 보여 주세요.',
+            ['처음 장면과 비교해 무엇이 달라졌나요?', '주인공이 얻은 것은 무엇인가요?'],
+            '일 년 뒤 지후는 작은 가게를 열었다. 첫 손님이 들어오자 그는 자랑스럽게 인사했다. 예전 같은 안정은 아니었지만, 이번에는 스스로 만든 단단한 행복이었다.',
+            ['일 년 뒤 …', '예전의 ○○와 달리 …'])
+        ]
+      },
+
+      icarus: {
+        name: '이카로스형', en: 'Icarus', color: '#ff2e97',
+        summary: '정점까지 오른 뒤 추락하는 구조입니다. 오르는 장면이 눈부실수록 떨어지는 장면이 아프게 남아요.',
+        steps: [
+          S('출발점', '날개를 꿈꾸는 사람', -1, false,
+            '큰 야망과 그에 비해 작은 현재를 대비하세요. 야망이 곧 약점이 될 수 있다는 암시를 넣으면 좋습니다.',
+            ['주인공이 이루고 싶은 것은 무엇이고 지금 어디쯤인가요?', '그 야망의 어두운 면은 무엇인가요?'],
+            '이안은 낡고 차가운 창고에서 혼자 날개를 만들었다. 비웃음과 쌓여 가는 실패작 속에서 외로움이 깊어졌지만, 하늘을 걷겠다는 꿈만은 놓지 않았다.',
+            ['○○는 오래전부터 …', '아무도 믿지 않았지만 …']),
+          S('상승', '날개가 펴지는 순간', 1, false,
+            '노력이 결실을 맺기 시작합니다. 성공이 주는 짜릿함을 구체적인 감각으로 쓰세요.',
+            ['첫 성공은 어떤 모습인가요?', '사람들의 시선은 어떻게 바뀌나요?'],
+            '마침내 날개가 바람을 받아 떠올랐다. 이안은 환호하며 두 팔을 활짝 벌렸다. 마을 사람들은 놀란 얼굴로 박수를 보내기 시작했다.',
+            ['마침내 …', '바람이 …']),
+          S('정점', '가장 높이 오른 순간', 2, false,
+            '주인공이 모든 것을 가진 듯한 최고의 순간을 쓰세요. 이 장면이 눈부실수록 이후의 추락이 아픕니다.',
+            ['주인공 눈에 세상은 어떻게 보이나요?', '주인공이 새롭게 믿게 된 것은 무엇인가요?'],
+            '이안은 구름 위까지 올라 눈부신 햇빛을 맞았다. 세상이 발아래 펼쳐졌고, 그는 자유롭다는 사실에 가슴이 벅찼다. 이제 그에게 불가능은 없었다.',
+            ['○○는 구름 위에서 …', '세상이 발아래 …']),
+          S('균열', '첫 경고', -1, true,
+            '정점 직후, 작은 경고 신호가 나타납니다. 주인공이 그것을 무시하거나 과신하는 모습을 보여 주세요.',
+            ['어떤 경고가 나타나나요?', '주인공은 왜 그것을 무시하나요?'],
+            '그러나 날개 끝의 이음새에서 불길한 소리가 났다. 이안은 불안한 마음을 애써 외면하고 더 높이 올라갔다. 이 정도 균열쯤은 괜찮다고 스스로를 달랬다.',
+            ['그러나 그 순간 …', '작은 소리가 났지만 …']),
+          S('추락', '떨어지는 순간', -2, false,
+            '정점의 높이만큼 추락이 깊어야 합니다. 첫 장면과 이어지는 상징(날개 등)을 활용하세요.',
+            ['첫 장면의 어떤 사물이 다시 나오나요?', '떨어지는 동안 주인공은 무엇을 깨닫나요?'],
+            '날개가 부서지는 순간 하늘이 빙글 돌았다. 이안은 비명을 지르며 어두운 바다로 추락했다. 차가운 물속에서 그는 뒤늦은 후회를 삼켰다.',
+            ['날개가 …', '○○는 떨어지는 동안 …'])
+        ]
+      },
+
+      cinderella: {
+        name: '신데렐라형', en: 'Cinderella', color: '#39ff14',
+        summary: '상승, 하강, 다시 상승으로 이어지는 구조입니다. 중간의 추락이 깊을수록 마지막 반등이 빛나요.',
+        steps: [
+          S('출발점', '재투성이의 하루', -2, false,
+            '주인공이 무시당하거나 갇혀 있는 일상을 보여 주세요. 억울함과 간절한 바람이 함께 드러나면 좋습니다.',
+            ['주인공은 어떤 처지에서 매일을 보내나요?', '그 와중에도 놓지 않는 것은 무엇인가요?'],
+            '유나는 서점 구석에서 매일 먼지 쌓인 책을 닦았다. 손님들은 그녀의 이름을 묻지 않았고, 사장은 차가운 말투로 일을 늘렸다. 그래도 퇴근길마다 책 한 권을 안고 눈물을 삼켰다.',
+            ['○○는 매일 …', '아무도 ○○의 이름을 …']),
+          S('첫 상승', '문이 열리는 순간', 1, false,
+            '조력자나 행운으로 갑자기 기회가 찾아옵니다. 평소와 다른 공기와 설렘을 담으세요.',
+            ['누가 또는 무엇이 기회를 가져오나요?', '주인공은 어떤 준비를 하나요?'],
+            '어느 날 단골 노부인이 유나에게 낭독회 초대장을 건넸다. 유나는 설레는 마음으로 가장 아끼는 옷을 꺼냈다. 거울 속의 자신이 처음으로 환하게 웃고 있었다.',
+            ['어느 날 …', '초대장을 받은 순간 …']),
+          S('추락', '자정의 종소리', -1, true,
+            '가장 좋을 때 갑작스러운 반전이 옵니다. 기회를 빼앗기거나 약점이 드러나는 순간을 쓰세요.',
+            ['어떤 사건이 분위기를 뒤집나요?', '주변 사람들의 반응은 어떤가요?'],
+            '그러나 낭독회 도중 사장이 나타나 유나의 서투른 글을 비웃었다. 사람들의 시선이 차갑게 식었고, 유나는 얼굴이 붉어진 채 밖으로 뛰쳐나갔다.',
+            ['그러나 바로 그때 …', '갑자기 …']),
+          S('바닥', '가장 어두운 밤', -2, false,
+            '희망이 완전히 사라진 듯한 지점입니다. 주인공이 포기하려는 마음을 직접 보여 주세요.',
+            ['주인공은 어디에서 무엇을 하고 있나요?', '스스로에게 어떤 말을 하나요?'],
+            '유나는 빗속 버스 정류장에서 오래 울었다. 이제 모든 것이 끝났다고, 처음부터 자신에게 어울리지 않는 자리였다고 생각했다. 젖은 초대장은 주머니 속에서 형체를 잃었다.',
+            ['비가 내리는 밤, …', '○○는 모든 것을 …']),
+          S('반등', '다시 일어서는 용기', 1, true,
+            '외부의 구원이 아니라 주인공 안의 변화가 반등을 만듭니다. 처음 장면의 무언가를 다른 방식으로 되살리세요.',
+            ['처음 장면의 무엇이 이제는 힘이 되나요?', '주인공이 스스로 내리는 결정은 무엇인가요?'],
+            '그때 유나는 주머니 속 작은 수첩을 떠올렸다. 비에 젖었지만 글자는 남아 있었다. 그녀는 용기를 내어 다시 서점으로 돌아가 이야기를 이어 쓰기 시작했다.',
+            ['그때 문득 …', '○○는 용기를 내어 …']),
+          S('결말', '다시, 더 높이', 2, false,
+            '첫 장면의 공간에서 같은 행동이 이제는 다른 의미가 되도록 마무리하세요.',
+            ['처음에 하던 일은 이제 어떤 의미가 되었나요?', '주인공의 이름을 이제 누가 부르나요?'],
+            '일 년 뒤 서점 한가운데에는 유나의 이름이 적힌 책이 놓여 있었다. 그녀는 책등을 닦으며 자랑스럽게 미소 지었다. 창으로 쏟아지는 햇빛이 유난히 따뜻했다.',
+            ['일 년 뒤 …', '이제 사람들은 ○○를 …'])
+        ]
+      },
+
+      oedipus: {
+        name: '오이디푸스형', en: 'Oedipus', color: '#ff2e97',
+        summary: '하강, 상승, 다시 하강으로 이어지는 구조입니다. 잠깐의 희망이 선명할수록 마지막 추락이 깊어져요.',
+        steps: [
+          S('출발점', '모든 것이 괜찮아 보일 때', 1, false,
+            '사건 이전의 안정감과 주인공이 믿는 것을 보여 주세요. 믿음이 클수록 뒤의 하락이 아픕니다.',
+            ['주인공이 믿고 있는 것은 무엇인가요?', '그 믿음이 일상에서 어떻게 드러나나요?'],
+            '서진은 십 년째 같은 마을을 지켜 온 형사였다. 주민들은 그를 믿고 따랐고, 그는 오늘도 평화로운 거리를 걸으며 뿌듯함을 느꼈다.',
+            ['○○는 십 년째 …', '그는 자신의 일을 …']),
+          S('하락', '첫 불길한 단서', -1, true,
+            '이전의 믿음을 흔드는 사건이 시작됩니다. 주인공이 진실에 다가갈수록 불편해지게 하세요.',
+            ['어떤 단서가 믿음을 흔드나요?', '주변 사람들의 어떤 모습이 달라 보이나요?'],
+            '그러던 어느 밤, 서진은 낡은 서류함에서 지워진 이름을 발견했다. 의심이 스멀스멀 번졌고, 믿었던 동료의 거짓말이 하나둘 드러났다.',
+            ['그러던 어느 밤 …', '이상한 점은 …']),
+          S('바닥', '진실의 무게', -2, false,
+            '주인공이 감당하기 힘든 사실을 마주합니다. 되돌릴 수 없다는 감각을 쓰세요.',
+            ['주인공이 알게 된 진실은 무엇인가요?', '그 진실이 주인공에게서 빼앗는 것은 무엇인가요?'],
+            '서진은 모든 증거가 자신을 가리키고 있음을 깨달았다. 배신과 절망이 한꺼번에 몰려와 숨을 쉴 수 없었다.',
+            ['○○는 깨달았다. …', '모든 증거가 …']),
+          S('희망', '반짝이는 희망', 1, true,
+            '긴 어둠 끝에 구원의 가능성이 보입니다. 독자도 안도할 만큼 분명한 희망이어야 합니다.',
+            ['어떤 사람이나 사건이 희망을 가져오나요?', '주인공은 그 희망을 어떻게 붙잡나요?'],
+            '그때 오랜 친구가 나타나 결정적인 증언을 약속했다. 서진은 오랜만에 안도의 숨을 내쉬었고, 새벽빛이 창문 너머로 따뜻하게 번졌다.',
+            ['그때 …', '마침내 한 줄기 …']),
+          S('균열', '희망에 드리운 그림자', -1, true,
+            '희망이 완전히 사라지기 전, 조금씩 금이 가는 모습을 보여 주세요.',
+            ['희망이 흔들리는 첫 신호는 무엇인가요?', '주인공은 그것을 어떻게 받아들이나요?'],
+            '하지만 약속한 날 친구는 나타나지 않았다. 서진은 초조하게 기다렸고, 건물 뒤편에서 낯선 그림자가 그를 지켜보고 있었다.',
+            ['하지만 약속한 날 …', '시간이 흐를수록 …']),
+          S('파국', '피할 수 없는 결말', -2, false,
+            '희망이 꺾인 만큼 더 깊은 곳으로 떨어집니다. 이야기가 던진 질문에 쓸쓸하지만 일관된 답을 주세요.',
+            ['처음의 믿음은 어떻게 되었나요?', '마지막 장면에 남는 이미지는 무엇인가요?'],
+            '서진은 쓰러진 친구의 곁에서 한참을 울었다. 모든 진실이 밝혀졌지만 그를 믿어 줄 사람은 이제 아무도 남지 않았다. 어두운 거리에서 그는 고독이라는 단어를 되뇌었다.',
+            ['○○는 쓰러진 …', '이제 아무도 …'])
+        ]
+      }
+    };
+
+    const ORDER = ['rise', 'fall', 'hole', 'icarus', 'cinderella', 'oedipus'];
+    const MIN_REQ = 30;   // 피드백을 받기 위한 단계별 최소 글자 수
+    const GOOD_LEN = 120; // 권장 글자 수
+
+    /* ----------------------------------------------------------
+       2. 감정 분석용 단어 목록 (키워드 기반 분석)
+       ---------------------------------------------------------- */
+    const POS = ['행복', '기쁘', '기쁨', '웃', '미소', '희망', '성공', '사랑', '따뜻', '평화', '환하', '반짝', '자랑', '안도',
+      '빛', '승리', '축하', '설레', '즐거', '뿌듯', '든든', '포근', '다행', '꿈', '박수', '환호', '활짝', '고마', '감사', '편안',
+      '용기', '응원', '기대', '향기', '해냈', '이겼', '풍요', '자유', '눈부', '반가', '벅찼', '짜릿', '자랑스'];
+    const NEG = ['슬프', '슬픔', '눈물', '절망', '실패', '잃', '외로', '두려', '공포', '죽', '상처', '어둠', '어두', '추락', '무너',
+      '배신', '후회', '고통', '분노', '울었', '울음', '울고', '떨리', '포기', '텅', '차갑', '차가', '그림자', '패배', '이별', '불안',
+      '비명', '무겁', '막막', '끝났', '사라졌', '쓰러', '깨졌', '부서', '거짓', '의심', '원망', '허무', '고독', '위기', '독촉',
+      '해고', '파산', '쫓겨', '비웃', '불합격', '균열', '불길', '초조', '무시', '억울'];
+    const TURN_RE = /(그러나|하지만|그런데|갑자기|그 순간|뜻밖|어느 날|어느 월요일|어느 밤|그때|결국|그러던|마침내|바로 그|문득|설상가상)/;
+    const SENSE_RE = /(냄새|소리|향기|맛|촉감|차가|따뜻|뜨거|밝|어두|떨리|숨|손끝|바람|햇빛|빛|빗|젖은|울렸)/;
+
+    // 글 한 덩어리의 분위기를 -2 ~ +2 로 계산 ('않', '못', '없'이 뒤따르면 뜻을 뒤집음)
+    const analyzeMood = (text) => {
+      let pos = 0, neg = 0;
+      const scan = (list, sign) => list.forEach((w) => {
+        let i = text.indexOf(w);
+        while (i !== -1) {
+          const tail = text.slice(i + w.length, i + w.length + 8).split(/[.!?\n]/)[0];
+          const flip = /(않|못|없)/.test(tail);
+          ((flip ? -sign : sign) > 0) ? pos++ : neg++;
+          i = text.indexOf(w, i + w.length);
+        }
+      });
+      scan(POS, 1); scan(NEG, -1);
+      const total = pos + neg;
+      const level = total ? 2 * ((pos - neg) / total) * Math.min(1, total / 3) : 0;
+      return { pos, neg, total, level };
+    };
+
+    /* ----------------------------------------------------------
+       3. 곡선 그리기 (단계별 level 값을 부드러운 선으로 연결)
+       ---------------------------------------------------------- */
+    const toPoints = (levels, w, h, pad) => levels.map((v, i) => [
+      pad + ((w - 2 * pad) * i) / (levels.length - 1),
+      pad + (h - 2 * pad) * (1 - (clamp(v, -2, 2) + 2) / 4)
+    ]);
+
+    const smoothPath = (pts) => {
+      let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+      for (let i = 0; i < pts.length - 1; i++) {
+        const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+        const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+        const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+        d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+      }
+      return d;
+    };
+
+    /* ----------------------------------------------------------
+       4. 화면 상태
+       ---------------------------------------------------------- */
+    const params = new URLSearchParams(location.search);
+    const typeId = params.get('type');
+    const type = TYPES[typeId];
+
+    const draftKey = (id) => `sa:draft:${id}`;
+    const doneKey = (id) => `sa:done:${id}`;
+
+    let state = { name: '', texts: [], step: 0 };
+
+    const loadDraft = () => {
+      const n = type.steps.length;
+      state = { name: '', texts: Array(n).fill(''), step: 0 };
+      const raw = store.get(draftKey(typeId));
+      if (!raw) return;
+      try {
+        const saved = JSON.parse(raw);
+        state.name = saved.name || '';
+        state.texts = Array.from({ length: n }, (_, i) => (saved.texts && saved.texts[i]) || '');
+        state.step = clamp(saved.step || 0, 0, n - 1);
+      } catch (e) { /* 손상된 저장값은 무시 */ }
+    };
+    const saveDraft = () => store.set(draftKey(typeId), JSON.stringify(state));
+    const lenOf = (t) => t.replace(/\s/g, '').length;
+
+    /* ----------------------------------------------------------
+       5. 유형 선택 화면 (type 값이 없거나 잘못된 경우)
+       ---------------------------------------------------------- */
+    const renderPicker = () => {
+      $('#picker').hidden = false;
+      $('#pickerGrid').innerHTML = ORDER.map((id) => {
+        const t = TYPES[id];
+        const score = store.get(doneKey(id));
+        return `<a class="pick-card" href="practice.html?type=${id}">
+          <strong>${t.name}</strong><span class="en">${t.en}</span>
+          <p>${t.summary}</p>
+          ${score ? `<p class="done-tag">완료 · ${esc(score)}점</p>` : ''}
+        </a>`;
+      }).join('');
+    };
+
+    /* ----------------------------------------------------------
+       6. 연습 화면: 소개 / 곡선 / 단계 목록 / 단계 본문
+       ---------------------------------------------------------- */
+    const moodWord = (v) => (v >= 1.5 ? '매우 좋음' : v > 0 ? '좋은 편' : v >= -1 ? '나쁜 편' : '매우 나쁨');
+
+    const dirOf = (i) => {
+      if (i === 0) return 'start';
+      return type.steps[i].level > type.steps[i - 1].level ? 'up' : 'down';
+    };
+
+    const renderArc = () => {
+      const w = 420, h = 200, pad = 28;
+      const levels = type.steps.map((s) => s.level);
+      const pts = toPoints(levels, w, h, pad);
+      const cur = pts[state.step];
+      $('#pArc').innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(type.name)} 감정 곡선">
+          <line x1="${pad}" y1="${h / 2}" x2="${w - pad}" y2="${h / 2}" stroke="#333" stroke-dasharray="4 6"/>
+          <path d="${smoothPath(pts)}" fill="none" stroke="${type.color}" stroke-width="4" stroke-linecap="round"/>
+          ${pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="${i === state.step ? 0 : 5}" fill="#000" stroke="${type.color}" stroke-width="2.5"/>`).join('')}
+          <circle cx="${cur[0]}" cy="${cur[1]}" r="12" fill="${type.color}" opacity=".25"/>
+          <circle cx="${cur[0]}" cy="${cur[1]}" r="7" fill="${type.color}"/>
+        </svg>`;
+    };
+
+    const renderStepper = () => {
+      $('#stepper').innerHTML = type.steps.map((s, i) => {
+        const filled = lenOf(state.texts[i]) >= MIN_REQ;
+        const cls = ['step-pill', i === state.step ? 'current' : '', filled ? 'filled' : ''].join(' ');
+        return `<li><button type="button" class="${cls}" data-step="${i}" ${i === state.step ? 'aria-current="step"' : ''}>
+          <span class="no">${i + 1}</span>${s.role}</button></li>`;
+      }).join('');
+    };
+
+    const updateMeter = () => {
+      const len = lenOf($('#answer').value);
+      $('#counter').textContent = `${len}자`;
+      $('#meterFill').style.width = `${clamp((len / GOOD_LEN) * 100, 0, 100)}%`;
+      $('#meter').classList.toggle('ok', len >= GOOD_LEN);
+    };
+
+    const renderStep = () => {
+      const i = state.step, n = type.steps.length, s = type.steps[i];
+      const dir = dirOf(i);
+      $('#stepBadge').textContent = `단계 ${i + 1} / ${n} · ${s.role}`;
+      const chip = $('#moodChip');
+      chip.className = `chip ${dir === 'up' ? 'up' : dir === 'down' ? 'down' : ''}`;
+      chip.textContent = `${dir === 'start' ? '출발 장면' : dir === 'up' ? '올라가는 장면' : '내려가는 장면'} · 분위기 ${moodWord(s.level)}`;
+      $('#stepTitle').textContent = s.title;
+      $('#stepGoal').textContent = s.goal;
+      $('#guideList').innerHTML = s.guide.map((g) => `<li>${esc(g)}</li>`).join('');
+      $('#sampleText').textContent = s.sample;
+      $('#sampleBox').open = false;
+      $('#starters').innerHTML = `<span class="label">시작 문장</span>` +
+        s.starters.map((t) => `<button type="button" class="starter" data-text="${esc(t)}">${esc(t)}</button>`).join('');
+
+      $('#nameField').hidden = i !== 0;
+      $('#nameInput').value = state.name;
+      $('#answer').value = state.texts[i];
+      $('#formMsg').textContent = '';
+
+      $('#prevBtn').disabled = i === 0;
+      $('#nextBtn').hidden = i === n - 1;
+      $('#doneBtn').hidden = i !== n - 1;
+
+      updateMeter();
+      renderStepper();
+      renderArc();
+    };
+
+    const goStep = (i) => {
+      state.step = clamp(i, 0, type.steps.length - 1);
+      saveDraft();
+      renderStep();
+    };
+
+    /* ----------------------------------------------------------
+       7. 피드백 만들기
+       ---------------------------------------------------------- */
+    const evaluate = () => {
+      const n = type.steps.length;
+      const name = state.name.trim();
+
+      const steps = type.steps.map((s, i) => {
+        const text = state.texts[i];
+        const len = lenOf(text);
+        const mood = analyzeMood(text);
+        const sameSign = mood.level * s.level > 0;
+        const close = Math.abs(mood.level - s.level) <= 1.2;
+        const lenState = len >= GOOD_LEN ? 'good' : len >= 60 ? 'ok' : 'miss';
+        const moodState = sameSign && close ? 'good' : sameSign ? 'ok' : 'miss';
+        const turnFound = TURN_RE.test(text);
+        const turnState = !s.turn ? null : turnFound ? 'good' : 'miss';
+        const nameHit = i === 0 ? true : (name ? text.includes(name) : false);
+        const sense = SENSE_RE.test(text);
+        return { s, i, text, len, mood, lenState, moodState, turnState, nameHit, sense, dir: dirOf(i) };
+      });
+
+      const avg = (arr, map) => arr.reduce((a, x) => a + map[x], 0) / arr.length;
+      const lenScore = avg(steps.map((x) => x.lenState), { good: 1, ok: 0.6, miss: 0.2 }) * 25;
+      const moodScore = avg(steps.map((x) => x.moodState), { good: 1, ok: 0.6, miss: 0 }) * 40;
+      const turnSteps = steps.filter((x) => x.turnState);
+      const turnScore = (turnSteps.length ? turnSteps.filter((x) => x.turnState === 'good').length / turnSteps.length : 1) * 15;
+      const others = steps.slice(1);
+      const nameRatio = name ? others.filter((x) => x.nameHit).length / others.length : 0;
+      const nameScore = nameRatio * 10;
+      const senseCount = steps.filter((x) => x.sense).length;
+      const senseScore = clamp(senseCount / Math.ceil(n / 2), 0, 1) * 10;
+      const total = Math.round(lenScore + moodScore + turnScore + nameScore + senseScore);
+
+      const hasDialogue = /["“”‘’']/.test(state.texts.join(' '));
+      return { steps, total, name, nameRatio, senseCount, turnSteps, hasDialogue, moodMatches: steps.filter((x) => x.moodState === 'good').length };
+    };
+
+    // 단계별 한 줄 코멘트
+    const stepComment = (x) => {
+      const parts = [];
+      const up = x.s.level > 0;
+      if (x.moodState === 'good') {
+        parts.push(`${up ? '좋은 분위기' : '무겁고 어두운 분위기'}가 목표 곡선과 잘 맞아요.`);
+      } else if (x.mood.total === 0) {
+        parts.push(`감정이 드러나는 표현이 거의 없어요. ${up ? '웃음, 안도, 온기' : '불안, 상실, 어둠'}처럼 장면의 분위기를 보여 주는 표현을 한두 개 더해 보세요.`);
+      } else if (x.moodState === 'ok') {
+        parts.push(`방향은 맞지만 분위기가 약해요. ${up ? '좋아지는 순간을 더 구체적인 행동과 감각으로' : '나빠지는 순간을 더 구체적인 행동과 감각으로'} 보여 주세요.`);
+      } else {
+        parts.push(`이 장면은 ${up ? '올라가는' : '내려가는'} 구간인데 글의 분위기는 반대쪽에 가까워요. ${up ? '성공이나 안도의 순간' : '상실이나 불안의 순간'}을 중심에 두고 다시 써 보세요.`);
+      }
+      if (x.turnState === 'miss') parts.push('분위기가 바뀌는 전환 장면이니 "그러나", "그때"처럼 변화를 알리는 표현이나 사건을 분명히 넣어 보세요.');
+      if (x.lenState === 'miss') parts.push('분량이 짧아요. 행동 한 줄과 감각 한 줄을 더해 보세요.');
+      return parts.join(' ');
+    };
+
+    const chipHtml = (state, label) => `<span class="chip s-${state}">${label}</span>`;
+    const stateWord = { good: '좋음', ok: '보통', miss: '보완' };
+
+    const renderChart = (res) => {
+      const w = 560, h = 240, pad = 36;
+      const target = type.steps.map((s) => s.level);
+      const mine = res.steps.map((x) => x.mood.level);
+      const tp = toPoints(target, w, h, pad), mp = toPoints(mine, w, h, pad);
+      $('#chart').innerHTML = `
+        <svg viewBox="0 0 ${w} ${h}" role="img" aria-label="목표 곡선과 내 글의 감정 곡선 비교">
+          <line x1="${pad}" y1="${h / 2}" x2="${w - pad}" y2="${h / 2}" stroke="#333" stroke-dasharray="4 6"/>
+          <path d="${smoothPath(tp)}" fill="none" stroke="#ff2e97" stroke-width="3" stroke-dasharray="8 7" stroke-linecap="round"/>
+          <path d="${smoothPath(mp)}" fill="none" stroke="#39ff14" stroke-width="4" stroke-linecap="round" style="filter:drop-shadow(0 0 6px rgba(57,255,20,.6))"/>
+          ${tp.map((p) => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="#000" stroke="#ff2e97" stroke-width="2.5"/>`).join('')}
+          ${mp.map((p) => `<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="#39ff14"/>`).join('')}
+        </svg>`;
+    };
+
+    const buildFull = () => {
+      const head = `[${type.name} 연습] 주인공: ${state.name.trim() || '(이름 없음)'}`;
+      const body = type.steps.map((s, i) => `■ ${i + 1}. ${s.role} – ${s.title}\n${state.texts[i].trim()}`).join('\n\n');
+      return `${head}\n\n${body}\n`;
+    };
+
+    const showFeedback = () => {
+      const n = type.steps.length;
+
+      // 입력 확인: 이름과 단계별 최소 분량
+      if (!state.name.trim()) {
+        goStep(0);
+        $('#formMsg').textContent = '주인공 이름을 먼저 입력해 주세요.';
+        $('#nameInput').focus();
+        return;
+      }
+      const short = state.texts.map((t, i) => (lenOf(t) < MIN_REQ ? i : -1)).filter((i) => i >= 0);
+      if (short.length) {
+        goStep(short[0]);
+        $('#formMsg').textContent = `${short.map((i) => `${i + 1}단계`).join(', ')}를 ${MIN_REQ}자 이상으로 채우면 피드백을 받을 수 있어요.`;
+        return;
+      }
+
+      const res = evaluate();
+
+      // 점수와 총평
+      $('#scoreNum').textContent = res.total;
+      $('#ring').style.setProperty('--p', res.total);
+      const verdicts = [
+        [85, '훌륭해요. 곡선이 선명한 이야기예요.', '유형의 뼈대가 장면마다 잘 살아 있어요.'],
+        [70, '좋은 출발이에요.', '큰 흐름은 잡혔고, 몇 장면만 다듬으면 더 좋아져요.'],
+        [50, '뼈대가 잡혀 가고 있어요.', '아래 보완할 점을 한두 가지만 골라 고쳐 보세요.'],
+        [0, '조금만 더 다듬어 봐요.', '단계별 안내와 예시 스크립트를 다시 보며 장면을 보강해 보세요.']
+      ].find(([min]) => res.total >= min);
+      $('#verdict').textContent = verdicts[1];
+      $('#verdictSub').textContent = verdicts[2];
+
+      // 잘한 점 / 보완할 점
+      const good = [], fix = [];
+      if (res.moodMatches >= Math.ceil(n * 0.7)) good.push(`${n}개 장면 중 ${res.moodMatches}개가 목표 분위기와 잘 맞아요.`);
+      else fix.push(`목표 분위기와 맞는 장면이 ${n}개 중 ${res.moodMatches}개예요. 표시된 단계의 분위기를 다시 확인해 보세요.`);
+      const shortSteps = res.steps.filter((x) => x.lenState !== 'good');
+      if (!shortSteps.length) good.push('모든 장면이 충분한 분량으로 쓰여 있어요.');
+      else fix.push(`${shortSteps.map((x) => `${x.i + 1}단계`).join(', ')}는 ${GOOD_LEN}자 이상으로 늘리면 장면이 더 생생해져요.`);
+      if (res.turnSteps.length && res.turnSteps.every((x) => x.turnState === 'good')) good.push('분위기가 바뀌는 전환 장면마다 변화를 알리는 표현이 있어요.');
+      else if (res.turnSteps.length) fix.push(`전환 장면(${res.turnSteps.filter((x) => x.turnState === 'miss').map((x) => `${x.i + 1}단계`).join(', ')})에 변화를 알리는 사건이나 표현을 더해 보세요.`);
+      if (res.nameRatio >= 0.8) good.push(`주인공 ${res.name}의 이름이 이야기 전체에 이어져 있어요.`);
+      else fix.push(`주인공 이름(${res.name})이 ${Math.round(res.nameRatio * 100)}%의 단계에만 나와요. 중간 장면에서도 주인공을 이름으로 불러 주면 이야기가 이어져 보여요.`);
+      if (res.senseCount >= Math.ceil(n / 2)) good.push('소리, 빛, 온도 같은 감각 묘사가 곳곳에 있어요.');
+      else fix.push('감각 묘사(소리, 냄새, 빛, 온도)가 부족해요. 장면마다 하나씩만 넣어도 훨씬 생생해져요.');
+      if (!res.hasDialogue) fix.push('대사가 한 줄도 없어요. 전환 장면에 짧은 대사를 넣으면 감정이 더 잘 전달돼요.');
+      if (!good.length) good.push('끝까지 모든 단계를 채워 낸 것만으로도 큰 성과예요.');
+      $('#goodList').innerHTML = good.map((t) => `<li>${esc(t)}</li>`).join('');
+      $('#fixList').innerHTML = (fix.length ? fix : ['눈에 띄는 약점이 없어요. 문장의 리듬을 소리 내어 읽으며 다듬어 보세요.']).map((t) => `<li>${esc(t)}</li>`).join('');
+
+      // 그래프 + 단계별 카드
+      renderChart(res);
+      $('#stepFeedback').innerHTML = res.steps.map((x) => `
+        <article class="card">
+          <h3>${x.i + 1}단계 · ${esc(x.s.role)}</h3>
+          <div class="chips">
+            ${chipHtml(x.moodState, `분위기 ${stateWord[x.moodState]}`)}
+            ${chipHtml(x.lenState, `분량 ${stateWord[x.lenState]} (${x.len}자)`)}
+            ${x.turnState ? chipHtml(x.turnState, `전환 ${stateWord[x.turnState]}`) : ''}
+          </div>
+          <p>${esc(stepComment(x))}</p>
+        </article>`).join('');
+
+      // 다음 연습 추천 및 완료 기록
+      store.set(doneKey(typeId), String(res.total));
+      const next = ORDER.find((id) => id !== typeId && !store.get(doneKey(id))) || ORDER[(ORDER.indexOf(typeId) + 1) % ORDER.length];
+      $('#nextTypeBtn').href = `practice.html?type=${next}`;
+      $('#nextTypeBtn').textContent = `${TYPES[next].name} 연습하기`;
+
+      const fb = $('#feedback');
+      fb.hidden = false;
+      fb.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      $('#fbTitle').focus({ preventScroll: true });
+    };
+
+    /* ----------------------------------------------------------
+       8. 이벤트 연결
+       ---------------------------------------------------------- */
+    const initPractice = () => {
+      $('#practice').hidden = false;
+      document.title = `${type.name} 창작 연습 – 스토리 아크`;
+      $('#pTitle').textContent = `${type.name} 연습`;
+      $('#pEn').textContent = type.en;
+      $('#pSummary').textContent = type.summary;
+      loadDraft();
+      renderStep();
+
+      // 단계 선택 (이벤트 위임)
+      $('#stepper').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-step]');
+        if (btn) goStep(Number(btn.dataset.step));
+      });
+
+      // 글 입력: 저장 + 글자 수 갱신
+      $('#answer').addEventListener('input', (e) => {
+        state.texts[state.step] = e.target.value;
+        saveDraft();
+        updateMeter();
+        renderStepper();
+      });
+      $('#nameInput').addEventListener('input', (e) => { state.name = e.target.value; saveDraft(); });
+
+      // 시작 문장 넣기
+      $('#starters').addEventListener('click', (e) => {
+        const btn = e.target.closest('.starter');
+        if (!btn) return;
+        const name = state.name.trim();
+        const text = name ? btn.dataset.text.replace(/○○/g, name) : btn.dataset.text;
+        const ta = $('#answer');
+        ta.value = ta.value.trim() ? `${ta.value.trimEnd()}\n${text}` : text;
+        state.texts[state.step] = ta.value;
+        saveDraft(); updateMeter(); renderStepper();
+        ta.focus();
+      });
+
+      $('#prevBtn').addEventListener('click', () => goStep(state.step - 1));
+      $('#nextBtn').addEventListener('click', () => { goStep(state.step + 1); $('#stepPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      $('#doneBtn').addEventListener('click', showFeedback);
+
+      // 피드백 영역 버튼
+      $('#reviseBtn').addEventListener('click', () => {
+        goStep(0);
+        $('#stepPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      $('#copyBtn').addEventListener('click', async () => {
+        const btn = $('#copyBtn');
+        try {
+          await navigator.clipboard.writeText(buildFull());
+          btn.textContent = '복사했어요';
+        } catch (e) {
+          // 클립보드를 쓸 수 없으면 전체 글을 화면에 펼쳐 직접 복사하게 함
+          const box = $('#storyFull');
+          box.textContent = buildFull();
+          box.hidden = false;
+          btn.textContent = '아래 글을 직접 복사하세요';
+        }
+        setTimeout(() => { btn.textContent = '전체 글 복사'; }, 2200);
+      });
+      $('#saveBtn').addEventListener('click', () => {
+        const blob = new Blob([buildFull()], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type.name}-연습.txt`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+    };
+
+    if (type) initPractice(); else renderPicker();
+
+    /* ----------------------------------------------------------
+       9. 헤더 · 햄버거 · 위로 가기 (story-arc.html과 동일 동작)
+       ---------------------------------------------------------- */
+    const header = $('#siteHeader');
+    const navToggle = $('#navToggle');
+    const hamburger = $('#hamburger');
+    const toTop = $('#toTop');
+    const SCROLL_LIMIT = 200;
+
+    const setMenu = (open) => {
+      navToggle.checked = open;
+      hamburger.setAttribute('aria-expanded', String(open));
+    };
+    navToggle.addEventListener('change', () => setMenu(navToggle.checked));
+    hamburger.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMenu(!navToggle.checked); }
+    });
+    document.querySelectorAll('#siteNav a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && navToggle.checked) setMenu(false); });
+
+    const onScroll = () => {
+      const passed = window.scrollY > SCROLL_LIMIT;
+      header.classList.toggle('scrolled', passed);
+      toTop.classList.toggle('show', passed);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  </script>
+</body>
+</html>
