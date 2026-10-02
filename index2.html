@@ -13,7 +13,7 @@
 
   <style>
     /* ==========================================================
-       1. 디자인 토큰 & 기본 스타일 (story-arc.html과 동일)
+       1. 디자인 토큰 & 기본 스타일 (index.html과 동일)
        ========================================================== */
     :root {
       --black: #000000;
@@ -318,16 +318,16 @@
        ========================================================== -->
   <header class="site-header" id="siteHeader">
     <div class="container header-inner">
-      <a href="story-arc.html" class="logo">스토리 <span>아크</span></a>
+      <a href="index.html" class="logo">스토리 <span>아크</span></a>
       <input type="checkbox" id="navToggle" class="nav-toggle" aria-label="메뉴 열기/닫기">
       <label for="navToggle" class="hamburger" id="hamburger" role="button" tabindex="0" aria-controls="siteNav" aria-expanded="false" aria-label="메뉴">
         <span></span><span></span><span></span>
       </label>
       <nav class="site-nav" id="siteNav" aria-label="주요 메뉴">
         <ul class="nav-list">
-          <li><a href="story-arc.html#types">스토리의 6가지 유형</a></li>
-          <li><a href="story-arc.html#structure">스토리 구조화</a></li>
-          <li><a href="story-arc.html#list">창작목록</a></li>
+          <li><a href="index.html#types">스토리의 6가지 유형</a></li>
+          <li><a href="index.html#structure">스토리 구조화</a></li>
+          <li><a href="index.html#list">창작목록</a></li>
         </ul>
       </nav>
     </div>
@@ -340,7 +340,7 @@
            [섹션] 유형 선택 화면 (주소에 type 값이 없을 때만 표시)
            ====================================================== -->
       <section id="picker" hidden>
-        <a class="back" href="story-arc.html#list">창작목록으로 돌아가기</a>
+        <a class="back" href="index.html#list">창작목록으로 돌아가기</a>
         <div class="picker-head">
           <h1>연습할 유형을 골라 주세요</h1>
           <p>유형을 고르면 단계별 안내와 참고 스크립트가 열립니다. 모든 단계를 쓰고 나면 피드백을 받을 수 있어요.</p>
@@ -352,7 +352,7 @@
            [섹션] 연습 화면: 소개 + 단계 선택 + 단계별 작성
            ====================================================== -->
       <section id="practice" hidden>
-        <a class="back" href="story-arc.html#list">창작목록으로 돌아가기</a>
+        <a class="back" href="index.html#list">창작목록으로 돌아가기</a>
 
         <div class="p-head">
           <div>
@@ -1108,7 +1108,7 @@
     if (type) initPractice(); else renderPicker();
 
     /* ----------------------------------------------------------
-       9. 헤더 · 햄버거 · 위로 가기 (story-arc.html과 동일 동작)
+       9. 헤더 · 햄버거 · 위로 가기 (index.html과 동일 동작)
        ---------------------------------------------------------- */
     const header = $('#siteHeader');
     const navToggle = $('#navToggle');
